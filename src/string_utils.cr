@@ -19,6 +19,15 @@ module Ejson
       str.to_slice.hexstring
     end
 
+    def self.has_content?(str)
+      if str.nil?
+        return false
+      elsif str.size == 0
+        return false
+      end
+      return true
+    end
+
   end
 
 end

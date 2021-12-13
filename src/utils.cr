@@ -20,6 +20,17 @@ module Ejson
       end
     end
 
+    def self.read_file(file_name) : String
+      result = ""
+      path = Path[file_name]
+      if File.exists? path
+        result = File.read(path)
+      end
+      result
+    end
+
+    #def self.str_to_json(str)
+
   end
 
 end
