@@ -40,9 +40,9 @@ module Ejson
     def run
       case @command
       when COMMAND_INIT
-        command_init()        
+        command_init()
       else
-        "Nothing to do ..."
+        puts "Nothing to do."
       end
     end
 
