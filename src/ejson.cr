@@ -4,6 +4,7 @@ require "colorize"
 
 require "../src/secure_string"
 require "../src/string_utils"
+require "../src/utils"
 
 module Ejson
 
@@ -33,6 +34,7 @@ module Ejson
       @key_dir ||= ENV["EJSON_KEYDIR"]
       parse_opts()
       puts "Run command #{@command.colorize(:cyan)} ..." if @debug
+      puts "Key dir #{@key_dir.colorize(:cyan)}"
     end
 
     def run
@@ -46,14 +48,23 @@ module Ejson
 
     private def command_init
       secure = SecureString.new()
-      str = secure.random_str(@key_size)
 
-      h = StringUtils.str_to_hex(str)
-      s = StringUtils.hex_to_str(h)
+      priv_str = secure.random_str(@key_size)
+      priv_hex = StringUtils.str_to_hex(priv_str)
+      pub_str = secure.random_str(@key_size)
+      pub_hex = StringUtils.str_to_hex(pub_str)
 
-      p "str => #{str}"
-      p "h => #{h}"
-      p "s => #{s}"
+      puts "Generated key pair (hex digit):"
+      puts " => 🔑 private: #{priv_hex}"
+      puts " => 🍺 public: #{pub_hex}"
+
+      Utils.with_dir(@key_dir) do |dir|
+        save_to = Path[dir] / pub_hex
+        Utils.with_file(save_to, "w") do |f|
+          f.puts priv_hex
+        end
+        puts " => 💾 saved to: #{save_to.to_s.colorize(:green)}"
+      end
     end
 
     private def parse_opts
@@ -63,13 +74,14 @@ module Ejson
         parser.on("init", "Init private and public key") do
           @command = COMMAND_INIT
           parser.banner = "Usage: #{NAME} #{COMMAND_INIT} [arguments]"
-          parser.on("-o DIR", "--out=DIR", "Specify the directory name where the private and public keys are to be stored") { |_name| @file_name_out = _name }
+          parser.on("-k DIR", "--keydir=DIR", "Specify the directory name where the private and public keys are to be stored") { |_name| @key_dir = _name }
           parser.on("-s SIZE", "--out=SIZE", "Key length") { |_name| @key_size = _name.to_i }
         end
 
         parser.on("encode", "Encode JSON") do
           @command = COMMAND_ENCRYPT
           parser.banner = "Usage: #{NAME} #{COMMAND_ENCRYPT} [arguments]"
+          parser.on("-k DIR", "--keydir=DIR", "Specify the directory name where the private and public keys are stored") { |_name| @key_dir = _name }
           parser.on("-f NAME", "--file=NAME", "Specify JSON input file name") { |_name| @file_name = _name }
           parser.on("-o NAME", "--output=NAME", "Specify JSON output file name") { |_name| @file_name_out = _name }
         end
@@ -77,6 +89,7 @@ module Ejson
         parser.on("decode", "Decode JSON") do
           @command = COMMAND_DECRYPT
           parser.banner = "Usage: #{NAME} #{COMMAND_DECRYPT} [arguments]"
+          parser.on("-k DIR", "--keydir=DIR", "Specify the directory name where the private and public keys are stored") { |_name| @key_dir = _name }
           parser.on("-f NAME", "--file=NAME", "Specify JSON input file name") { |_name| @file_name = _name }
           parser.on("-o NAME", "--output=NAME", "Specify JSON output file name") { |_name| @file_name_out = _name }
         end
