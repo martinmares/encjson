@@ -1,0 +1,19 @@
+name: ejson
+version: 0.1.0
+
+authors:
+  - Martin Mareš <martin.mares@seznam.cz>
+
+targets:
+  ejson:
+    main: src/ejson.cr
+#  eyaml:
+#    main: src/eyaml.cr
+
+dependencies:
+  monocypher:
+    github: konovod/monocypher
+
+crystal: 1.2.2
+
+license: MIT

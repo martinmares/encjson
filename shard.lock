@@ -1,0 +1,6 @@
+version: 2.0
+shards:
+  monocypher:
+    git: https://github.com/konovod/monocypher.git
+    version: 3.1.2+git.commit.0d24e95af5abea5e4c4af0b3a2fd20af4427457d
+
