@@ -6,6 +6,7 @@ require "../src/secure_string"
 require "../src/string_utils"
 require "../src/utils"
 require "../src/json_utils"
+require "../src/crypto_utils"
 
 module Ejson
 
@@ -52,12 +53,12 @@ module Ejson
     private def command_init
       secure = SecureString.new()
 
-      priv_str = secure.random_str(@key_size)
+      priv_str = secure.random_str(@key_size, set: :extended)
       priv_hex = StringUtils.str_to_hex(priv_str)
-      pub_str = secure.random_str(@key_size)
+      pub_str = secure.random_str(@key_size, set: :extended)
       pub_hex = StringUtils.str_to_hex(pub_str)
 
-      puts "Generated key pair (hex digit):"
+      puts "Generated key pair (hex):"
       puts " => 🔑 private: #{priv_hex}"
       puts " => 🍺 public: #{pub_hex}"
 
@@ -76,8 +77,9 @@ module Ejson
 
       JsonUtils.with_file(@file_name) do |content|
         JsonUtils.with_content(content) do |json|
-          if JsonUtils.has_priv_key? json
-            JsonUtils.encrypt(json)
+          if JsonUtils.has_public_key?(json)
+            utils = JsonUtils.new(json, @key_dir)
+            utils.encrypt()
             # encrypted = JsonUtils.encrypt(json)
             # puts encrypted.to_pretty_json
             # puts encrypted.dig("alias").as_h

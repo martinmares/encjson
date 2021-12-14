@@ -1,0 +1,32 @@
+require "monocypher"
+
+module Ejson
+
+  class CryptoUtils
+
+    def self.blake2b(str)
+      Crypto.blake2b(str.to_slice).hexstring
+    end
+
+    def self.private_key(str)
+      Crypto::SecretKey.new(str)
+    end
+
+    def self.public_key(str)
+      Crypto::PublicKey.new(str)
+    end
+
+    def self.shared_key(private_key, public_key)
+      Crypto::SymmetricKey.new(our_secret: private_key, their_public: public_key)
+    end
+
+    def self.encrypt(message, shared_key)
+      plaintext = message.to_slice
+      ciphertext = Bytes.new(plaintext.size + Crypto::OVERHEAD_SYMMETRIC)
+      Crypto.encrypt(key: shared_key, input: plaintext, output: ciphertext)
+      ciphertext
+    end
+  
+  end
+
+end

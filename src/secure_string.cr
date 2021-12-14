@@ -27,7 +27,7 @@ module Ejson
       end
       io.to_s
     end
-  
+
   end
 
 end
