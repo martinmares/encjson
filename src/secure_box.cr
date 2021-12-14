@@ -52,8 +52,12 @@ module EncJson
         val # value is already encrypted, don't touch it!
       else
         crypted : Slice(UInt8) = CryptoUtils.encrypt(message: val, shared_key: @crypto_shared) # Bytes = Slice(UInt8)
-        base64 = Base64.strict_encode(crypted)
-        "#{TYPE}#{BEGIN}@api=#{API}:@data=#{base64}#{END}"
+        crypted_base64 = Base64.strict_encode(crypted)
+
+        blake2b : Slice(UInt8) = CryptoUtils.blake2b(message: crypted_base64, key: @priv_key.to_slice)
+        blake2b_base64 = Base64.strict_encode(blake2b)
+
+        "#{TYPE}#{BEGIN}@api=#{API}:@data=#{crypted_base64}:@hash=#{blake2b_base64}#{END}"
       end
     end
 
@@ -66,23 +70,45 @@ module EncJson
         val # value is already decrypted, don't touch it!
       else
         data_field = get_data_field(val)
-        base64_decoded : Bytes = Base64.decode(data_field)
-        decrypted = CryptoUtils.decrypt(message: base64_decoded, shared_key: @crypto_shared)
-        decrypted
+        data_base64_decoded : Bytes = Base64.decode(data_field)
+
+        hash_field = get_hash_field(val)
+        hash_base64_decoded : Bytes = Base64.decode(hash_field)
+
+        decrypted = CryptoUtils.decrypt(message: data_base64_decoded, shared_key: @crypto_shared)
+
+        # check hash
+        blake2b : Slice(UInt8) = CryptoUtils.blake2b(message: data_field, key: @priv_key.to_slice)
+        if blake2b == hash_base64_decoded.to_slice
+          decrypted
+        else
+          k = key || "(empty)"
+          puts " => ❗ hash doesn't match for key #{k.to_s.colorize(:magenta)} can't decrypt!" if @debug
+          val # don't encrypt if hash fail!
+        end
       end
     end
 
     def get_data_field(val)
-      match = /^EncJson\[\@api\=(.*):\@data\=(.*)\]$/ix.match(val)
+      match = /^EncJson\[\@api\=(.*):\@data\=(.*):\@hash\=(.*)\]$/ix.match(val)
       if match
         match[2]
       else
         val
       end
     end
+    
+    def get_hash_field(val)
+      match = /^EncJson\[\@api\=(.*):\@data\=(.*):\@hash\=(.*)\]$/ix.match(val)
+      if match
+        match[3]
+      else
+        val
+      end
+    end
 
     def encrypted?(val)
-      match = /^EncJson\[\@api\=(.*):\@data\=(.*)\]$/ix.match(val)
+      match = /^EncJson\[\@api\=(.*):\@data\=(.*):\@hash\=(.*)\]$/ix.match(val)
       if match
         true
       else

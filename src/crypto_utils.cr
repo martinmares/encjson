@@ -4,8 +4,9 @@ module EncJson
 
   class CryptoUtils
 
-    def self.blake2b(str)
-      Crypto.blake2b(str.to_slice).hexstring
+    def self.blake2b(message, key)
+      message_bytes = message.to_slice
+      Crypto.blake2b(message_bytes, key: key, hash_size: 64)
     end
 
     def self.private_key(str)
