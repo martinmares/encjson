@@ -33,12 +33,14 @@ module EncJson
       @key_size = DEFAULT_KEY_SIZE
       @debug = false
       @stdin = true
+      @rewrite = false
       ENV["EJSON_KEYDIR"] ||= Path["~/.ejson"].expand(home: true).to_s
       @key_dir ||= ENV["EJSON_KEYDIR"]
       parse_opts()
       @stdin = false if @command == COMMAND_INIT
       puts "Run command #{@command.colorize(:cyan)} ..." if @debug
       puts "Key dir #{@key_dir.colorize(:cyan)}" if @debug
+      puts "STDIN enabled: #{@stdin.to_s.colorize(:cyan)}" if @debug
     end
 
     def run
@@ -74,21 +76,26 @@ module EncJson
     end
 
     private def command_encrypt
-      # puts "@file_name: #{@file_name}"
-      # puts "@file_name_out: #{@file_name_out}"
+      puts " => 💾 file_name: #{@file_name}" if @debug
+      puts " => 💾 file_name_out: #{@file_name_out}" if @debug
 
       JsonUtils.with_file(@file_name, @stdin) do |content|
         JsonUtils.with_content(content) do |json|
           if JsonUtils.has_public_key?(json)
             utils = JsonUtils.new(json, @key_dir, @debug)
             encrypted = utils.encrypt()
-            puts encrypted
-            # encrypted = JsonUtils.encrypt(json)
-            # puts encrypted.to_pretty_json
-            # puts encrypted.dig("alias").as_h
-            # puts encrypted.dig("alias").dig("bar").as_s?
+            if @rewrite
+              rewrite_file = @file_name
+              puts "Try rewrite content:"
+              Utils.with_file(rewrite_file, "w") do |f|
+                f.puts encrypted
+              end
+              puts " => 💾 rewrited: #{rewrite_file.to_s.colorize(:green)}"
+            else
+              puts encrypted
+            end
           else
-            puts "content: #{content}"
+            puts content
           end
         end
       end
@@ -109,22 +116,35 @@ module EncJson
           @command = COMMAND_ENCRYPT
           parser.banner = "Usage: #{NAME} #{COMMAND_ENCRYPT} [arguments]"
           parser.on("-k DIR", "--keydir=DIR", "Specify the directory name where the private and public keys are stored") { |_name| @key_dir = _name }
-          parser.on("-f NAME", "--file=NAME", "Specify JSON input file name") { |_name| @file_name = _name }
+          parser.on("-f NAME", "--file=NAME", "Specify JSON input file name") do |_name|
+            @file_name = _name
+            @stdin = false
+          end
           parser.on("-o NAME", "--output=NAME", "Specify JSON output file name") { |_name| @file_name_out = _name }
+          parser.on("-w", "--rewrite", "Rewrite input file!") { @rewrite = true }
         end
 
         parser.on(COMMAND_DECRYPT.to_s, "#{COMMAND_DECRYPT.to_s.capitalize} JSON") do
           @command = COMMAND_DECRYPT
           parser.banner = "Usage: #{NAME} #{COMMAND_DECRYPT} [arguments]"
           parser.on("-k DIR", "--keydir=DIR", "Specify the directory name where the private and public keys are stored") { |_name| @key_dir = _name }
-          parser.on("-f NAME", "--file=NAME", "Specify JSON input file name") { |_name| @file_name = _name }
+          parser.on("-f NAME", "--file=NAME", "Specify JSON input file name") do |_name|
+            @file_name = _name
+            @stdin = false
+          end
           parser.on("-o NAME", "--output=NAME", "Specify JSON output file name") { |_name| @file_name_out = _name }
         end
 
-        parser.on("-d", "--debug", "Enabled debug output") { @debug = true }
+        parser.on("-v", "--verbose", "Enabled verbose output") { @debug = true }
         parser.on("-h", "--help", "Show this help") do
           puts parser
           exit
+        end
+
+        parser.invalid_option do |flag|
+          STDERR.puts "ERROR: #{flag} is not a valid option."
+          STDERR.puts parser
+          exit(1)
         end
       end
 
