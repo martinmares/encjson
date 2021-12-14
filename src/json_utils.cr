@@ -5,7 +5,7 @@ require "../src/utils"
 require "../src/string_utils"
 require "../src/secure_box"
 
-module Ejson
+module EncJson
 
   class JsonUtils
 

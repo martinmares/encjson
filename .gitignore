@@ -3,4 +3,5 @@
 /bin/
 /.shards/
 /sample/
+/tmp/
 *.dwarf

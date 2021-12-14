@@ -1,4 +1,4 @@
-module Ejson
+module EncJson
 
 
   class Utils

@@ -8,7 +8,7 @@ require "../src/utils"
 require "../src/json_utils"
 require "../src/crypto_utils"
 
-module Ejson
+module EncJson
 
   VERSION = "1.0.0"
   NAME = "ejson"

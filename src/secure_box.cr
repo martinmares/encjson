@@ -3,11 +3,11 @@ require "base64"
 require "../src/json_utils"
 require "../src/crypto_utils"
 
-module Ejson
+module EncJson
 
   class SecureBox
 
-    TYPE = "ENCJ"
+    TYPE = "EncJson"
     API = "1.0"
     BEGIN = "["
     END = "]"

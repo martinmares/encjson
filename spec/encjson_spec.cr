@@ -1,6 +1,6 @@
 require "./spec_helper"
 
-describe Ejson do
+describe EncJson do
   # TODO: Write tests
 
   it "works" do

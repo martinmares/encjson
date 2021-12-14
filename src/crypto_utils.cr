@@ -1,6 +1,6 @@
 require "monocypher"
 
-module Ejson
+module EncJson
 
   class CryptoUtils
 
