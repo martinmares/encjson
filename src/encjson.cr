@@ -34,7 +34,7 @@ module EncJson
       @debug = false
       @stdin = true
       @rewrite = false
-      ENV["EJSON_KEYDIR"] ||= Path["~/.ejson"].expand(home: true).to_s
+      ENV["EJSON_KEYDIR"] ||= Path["~/.encjson"].expand(home: true).to_s
       @key_dir ||= ENV["EJSON_KEYDIR"]
       parse_opts()
       @stdin = false if @command == COMMAND_INIT
