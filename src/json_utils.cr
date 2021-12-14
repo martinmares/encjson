@@ -4,6 +4,7 @@ require "colorize"
 require "../src/utils"
 require "../src/string_utils"
 require "../src/secure_box"
+require "../src/encjson"
 
 module EncJson
 
@@ -13,7 +14,7 @@ module EncJson
 
     @pub_key : String
 
-    def initialize(@json : JSON::Any, @key_dir : String | Nil, @debug : Bool = false)
+    def initialize(@json : JSON::Any, @key_dir : String | Nil, @command : Symbol, @debug : Bool = false)
       @pub_key = @json[JSON_PUBLIC_KEY_NAME].as_s
       @secure_box = SecureBox.new(pub_key: @pub_key, key_dir: @key_dir, debug: @debug)
     end
@@ -45,24 +46,24 @@ module EncJson
     # https://crystal-lang.org/reference/1.2/syntax_and_semantics/alias.html
     alias JsonType = Nil | Bool | Int32 | Float64 | String | Array(JsonType) | Hash(String, JsonType)
 
-    def encrypt
+    def enc_dec
       return @json.to_pretty_json if @secure_box.priv_key_not_found?
       if @json.as_h?
-        result = encrypt_hash(@json)
+        result = parse_hash(@json)
       elsif @json.as_a?
-        result = encrypt_array(@json)
+        result = parse_array(@json)
       end
       result.to_pretty_json
     end
 
-    def encrypt_hash(any : JSON::Any, level : Int32 = 0) : JsonType
+    def parse_hash(any : JSON::Any, level : Int32 = 0) : JsonType
       result : JsonType = Hash(String, JsonType).new
       any.as_h.each do |key, val|
         # puts "[#{level}] key: #{key.colorize(:blue)}, val: #{val}"
         if val.as_h?
-          result[key] = encrypt_hash(val, level + 1)
+          result[key] = parse_hash(val, level + 1)
         elsif val.as_a?
-          result[key] = encrypt_array(val, level + 1)
+          result[key] = parse_array(val, level + 1)
         elsif val.as_i?
           result[key] = val.as_i
         elsif val.as_f?
@@ -70,7 +71,13 @@ module EncJson
         elsif val.as_bool?
           result[key] = val.as_bool
         elsif val.as_s?
-          result[key] = @secure_box.encrypt(key: key, val: val.as_s)
+          if @command == App::COMMAND_ENCRYPT
+            result[key] = @secure_box.encrypt(key: key, val: val.as_s) 
+          elsif @command == App::COMMAND_DECRYPT
+            result[key] = @secure_box.decrypt(key: key, val: val.as_s) 
+          else
+            result[key] = val.as_s # if you don't know, don't touch it!
+          end
         else
           result[key] = nil
         end
@@ -78,13 +85,13 @@ module EncJson
       result
     end
 
-    def encrypt_array(any : JSON::Any, level : Int32 = 0) : JsonType
+    def parse_array(any : JSON::Any, level : Int32 = 0) : JsonType
       result : JsonType = Array(JsonType).new
       any.as_a.each do |val|
         if val.as_h?
-          result << encrypt_hash(val, level + 1)
+          result << parse_hash(val, level + 1)
         elsif val.as_a?
-          result << encrypt_array(val, level + 1)
+          result << parse_array(val, level + 1)
         elsif val.as_i?
           result << val.as_i
         elsif val.as_f?
@@ -92,7 +99,13 @@ module EncJson
         elsif val.as_bool?
           result << val.as_bool
         elsif val.as_s?
-           result << @secure_box.encrypt(key: nil, val: val.as_s)
+          if @command == App::COMMAND_ENCRYPT
+            result << @secure_box.encrypt(key: nil, val: val.as_s)
+          elsif @command == App::COMMAND_DECRYPT
+            result << @secure_box.decrypt(key: nil, val: val.as_s)
+          else
+            result << val.as_s # if you don't know, don't touch it!
+          end
         else
           result << nil
         end

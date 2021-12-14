@@ -25,3 +25,10 @@ TODO: Write development instructions here
 ## Contributors
 
 - [Martin Mareš](https://github.com/your-github-user) - creator and maintainer
+
+## Notes
+
+```
+Bytes is defined as just alias Bytes = Slice(UInt8).
+With this in mind your question could be rephrased to “Can I get a Slice … without creating a new Slice …?” :)
+```

@@ -10,19 +10,19 @@ require "../src/crypto_utils"
 
 module EncJson
 
-  VERSION = "1.0.0"
-  NAME = "ejson"
-
-  COMMAND_INIT = :init
-  COMMAND_ENCRYPT = :encrypt
-  COMMAND_DECRYPT = :decrypt
-
-  DEFAULT_KEY_SIZE = 32
-
-  COMMANDS = [COMMAND_INIT, COMMAND_ENCRYPT, COMMAND_DECRYPT]
-
   class App
 
+    VERSION = "1.0.0"
+    NAME = "encjson"
+  
+    COMMAND_INIT = :init
+    COMMAND_ENCRYPT = :encrypt
+    COMMAND_DECRYPT = :decrypt
+  
+    DEFAULT_KEY_SIZE = 32
+  
+    COMMANDS = [COMMAND_INIT, COMMAND_ENCRYPT, COMMAND_DECRYPT]
+  
     @key_dir : String | Nil
     @key_size : Int32
 
@@ -48,9 +48,11 @@ module EncJson
       when COMMAND_INIT
         command_init()
       when COMMAND_ENCRYPT
-        command_encrypt()
+        command_enc_dec()
+      when COMMAND_DECRYPT
+        command_enc_dec()
       else
-        puts "Not implemented yet!"
+        puts "Command #{@command.to_s.colorize(:red)} not implemented yet!"
       end
     end
 
@@ -75,24 +77,24 @@ module EncJson
       end
     end
 
-    private def command_encrypt
+    private def command_enc_dec
       puts " => 💾 file_name: #{@file_name}" if @debug
       puts " => 💾 file_name_out: #{@file_name_out}" if @debug
 
       JsonUtils.with_file(@file_name, @stdin) do |content|
         JsonUtils.with_content(content) do |json|
           if JsonUtils.has_public_key?(json)
-            utils = JsonUtils.new(json, @key_dir, @debug)
-            encrypted = utils.encrypt()
+            utils = JsonUtils.new(json: json, key_dir: @key_dir, command: @command, debug: @debug)
+            enc_dec = utils.enc_dec()
             if @rewrite
               rewrite_file = @file_name
               puts "Try rewrite content:"
               Utils.with_file(rewrite_file, "w") do |f|
-                f.puts encrypted
+                f.puts enc_dec
               end
               puts " => 💾 rewrited: #{rewrite_file.to_s.colorize(:green)}"
             else
-              puts encrypted
+              puts enc_dec
             end
           else
             puts content
@@ -133,6 +135,7 @@ module EncJson
             @stdin = false
           end
           parser.on("-o NAME", "--output=NAME", "Specify JSON output file name") { |_name| @file_name_out = _name }
+          parser.on("-w", "--rewrite", "Rewrite input file!") { @rewrite = true }
         end
 
         parser.on("-d", "--debug", "Enabled debug output") { @debug = true }

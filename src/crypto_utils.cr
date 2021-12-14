@@ -21,10 +21,17 @@ module EncJson
     end
 
     def self.encrypt(message, shared_key)
-      plaintext = message.to_slice
-      ciphertext = Bytes.new(plaintext.size + Crypto::OVERHEAD_SYMMETRIC)
-      Crypto.encrypt(key: shared_key, input: plaintext, output: ciphertext)
+      message_bytes = message.to_slice
+      ciphertext = Bytes.new(message_bytes.size + Crypto::OVERHEAD_SYMMETRIC)
+      Crypto.encrypt(key: shared_key, input: message_bytes, output: ciphertext)
       ciphertext
+    end
+
+    def self.decrypt(message, shared_key)
+      message_bytes = message.to_slice
+      ciphertext = Bytes.new(message_bytes.size - Crypto::OVERHEAD_SYMMETRIC)
+      Crypto.decrypt(key: shared_key, input: message_bytes, output: ciphertext)
+      String.new(ciphertext)
     end
   
   end

@@ -46,24 +46,52 @@ module EncJson
     def encrypt(key, val)
       if key == JsonUtils::JSON_PUBLIC_KEY_NAME
         val # no encrypt public key!
-      elsif already_encrypted?(val)
+      elsif encrypted?(val)
         k = key || "(empty)"
         puts " => 💪 value for key #{k.to_s.colorize(:magenta)} is already encrypted" if @debug
         val # value is already encrypted, don't touch it!
       else
-        crypted = CryptoUtils.encrypt(message: val, shared_key: @crypto_shared)
+        crypted : Slice(UInt8) = CryptoUtils.encrypt(message: val, shared_key: @crypto_shared) # Bytes = Slice(UInt8)
         base64 = Base64.strict_encode(crypted)
         "#{TYPE}#{BEGIN}@api=#{API}:@data=#{base64}#{END}"
       end
     end
 
-    def already_encrypted?(val)
+    def decrypt(key, val)
+      if key == JsonUtils::JSON_PUBLIC_KEY_NAME
+        val # no decrypt public key!
+      elsif decrypted?(val)
+        k = key || "(empty)"
+        puts " => 💪 value for key #{k.to_s.colorize(:magenta)} is already decrypted" if @debug
+        val # value is already decrypted, don't touch it!
+      else
+        data_field = get_data_field(val)
+        base64_decoded : Bytes = Base64.decode(data_field)
+        decrypted = CryptoUtils.decrypt(message: base64_decoded, shared_key: @crypto_shared)
+        decrypted
+      end
+    end
+
+    def get_data_field(val)
+      match = /^EncJson\[\@api\=(.*):\@data\=(.*)\]$/ix.match(val)
+      if match
+        match[2]
+      else
+        val
+      end
+    end
+
+    def encrypted?(val)
       match = /^EncJson\[\@api\=(.*):\@data\=(.*)\]$/ix.match(val)
       if match
         true
       else
         false
       end
+    end
+
+    def decrypted?(val)
+      ! encrypted?(val)
     end
 
   end
