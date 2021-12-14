@@ -13,13 +13,17 @@ module EncJson
 
     @pub_key : String
 
-    def initialize(@json : JSON::Any, @key_dir : String | Nil)
+    def initialize(@json : JSON::Any, @key_dir : String | Nil, @debug : Bool = false)
       @pub_key = @json[JSON_PUBLIC_KEY_NAME].as_s
-      @secure_box = SecureBox.new(pub_key: @pub_key, key_dir: @key_dir)
+      @secure_box = SecureBox.new(pub_key: @pub_key, key_dir: @key_dir, debug: @debug)
     end
 
-    def self.with_file(file_name)
-      content = Utils.read_file(file_name)
+    def self.with_file(file_name, from_stdin : Bool = false)
+      if from_stdin
+        content = read_from_stdin
+      else
+        content = Utils.read_file(file_name)
+      end
       yield(content)
     end
 
@@ -34,16 +38,21 @@ module EncJson
       ! json[JSON_PUBLIC_KEY_NAME]?.nil?
     end
 
+    private def self.read_from_stdin : String
+      STDIN.gets_to_end
+    end
+
     # https://crystal-lang.org/reference/1.2/syntax_and_semantics/alias.html
     alias JsonType = Nil | Bool | Int32 | Float64 | String | Array(JsonType) | Hash(String, JsonType)
 
     def encrypt
+      return @json.to_pretty_json if @secure_box.priv_key_not_found?
       if @json.as_h?
         result = encrypt_hash(@json)
       elsif @json.as_a?
         result = encrypt_array(@json)
       end
-      puts result.to_pretty_json
+      result.to_pretty_json
     end
 
     def encrypt_hash(any : JSON::Any, level : Int32 = 0) : JsonType

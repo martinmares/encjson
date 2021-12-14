@@ -32,11 +32,13 @@ module EncJson
       @file_name_out = ""
       @key_size = DEFAULT_KEY_SIZE
       @debug = false
+      @stdin = true
       ENV["EJSON_KEYDIR"] ||= Path["~/.ejson"].expand(home: true).to_s
       @key_dir ||= ENV["EJSON_KEYDIR"]
       parse_opts()
+      @stdin = false if @command == COMMAND_INIT
       puts "Run command #{@command.colorize(:cyan)} ..." if @debug
-      puts "Key dir #{@key_dir.colorize(:cyan)}"
+      puts "Key dir #{@key_dir.colorize(:cyan)}" if @debug
     end
 
     def run
@@ -72,18 +74,21 @@ module EncJson
     end
 
     private def command_encrypt
-      puts "@file_name: #{@file_name}"
-      puts "@file_name_out: #{@file_name_out}"
+      # puts "@file_name: #{@file_name}"
+      # puts "@file_name_out: #{@file_name_out}"
 
-      JsonUtils.with_file(@file_name) do |content|
+      JsonUtils.with_file(@file_name, @stdin) do |content|
         JsonUtils.with_content(content) do |json|
           if JsonUtils.has_public_key?(json)
-            utils = JsonUtils.new(json, @key_dir)
-            utils.encrypt()
+            utils = JsonUtils.new(json, @key_dir, @debug)
+            encrypted = utils.encrypt()
+            puts encrypted
             # encrypted = JsonUtils.encrypt(json)
             # puts encrypted.to_pretty_json
             # puts encrypted.dig("alias").as_h
             # puts encrypted.dig("alias").dig("bar").as_s?
+          else
+            puts "content: #{content}"
           end
         end
       end
