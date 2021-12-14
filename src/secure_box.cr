@@ -46,10 +46,23 @@ module EncJson
     def encrypt(key, val)
       if key == JsonUtils::JSON_PUBLIC_KEY_NAME
         val # no encrypt public key!
+      elsif already_encrypted?(val)
+        k = key || "(empty)"
+        puts " => 💪 value for key #{k.to_s.colorize(:magenta)} is already encrypted" if @debug
+        val # value is already encrypted, don't touch it!
       else
         crypted = CryptoUtils.encrypt(message: val, shared_key: @crypto_shared)
         base64 = Base64.strict_encode(crypted)
         "#{TYPE}#{BEGIN}@api=#{API}:@data=#{base64}#{END}"
+      end
+    end
+
+    def already_encrypted?(val)
+      match = /^EncJson\[\@api\=(.*):\@data\=(.*)\]$/ix.match(val)
+      if match
+        true
+      else
+        false
       end
     end
 

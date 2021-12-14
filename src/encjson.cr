@@ -135,7 +135,7 @@ module EncJson
           parser.on("-o NAME", "--output=NAME", "Specify JSON output file name") { |_name| @file_name_out = _name }
         end
 
-        parser.on("-v", "--verbose", "Enabled verbose output") { @debug = true }
+        parser.on("-d", "--debug", "Enabled debug output") { @debug = true }
         parser.on("-h", "--help", "Show this help") do
           puts parser
           exit
