@@ -17,6 +17,8 @@ module EncJson
     def initialize(@pub_key : String, @key_dir : String | Nil, @debug : Bool = false)
       @priv_key = ""
       @priv_key_not_found = false
+
+      # Temporary only!
       @crypto_private = Crypto::SecretKey.new
       @crypto_public = Crypto::PublicKey.new(secret: @crypto_private)
       @crypto_shared = CryptoUtils.shared_key(private_key: @crypto_private, public_key: @crypto_public)
@@ -24,7 +26,7 @@ module EncJson
       puts "Created SecureBox:" if @debug
       Utils.with_dir(@key_dir) do |dir|
         read_from = Path[dir] / @pub_key
-        if File.exists? read_from 
+        if File.exists? read_from
           @priv_key = File.read(read_from).chomp
           puts " => 💾 read private key from: #{read_from.to_s.colorize(:green)}" if @debug
           puts " => 👷 prepare encryption key pair ..." if @debug
