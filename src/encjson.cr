@@ -14,15 +14,15 @@ module EncJson
 
     VERSION = "1.0.0"
     NAME = "encjson"
-  
+
     COMMAND_INIT = :init
     COMMAND_ENCRYPT = :encrypt
     COMMAND_DECRYPT = :decrypt
-  
+
     DEFAULT_KEY_SIZE = 32
-  
+
     COMMANDS = [COMMAND_INIT, COMMAND_ENCRYPT, COMMAND_DECRYPT]
-  
+
     @key_dir : String | Nil
     @key_size : Int32
 
@@ -38,6 +38,7 @@ module EncJson
       @key_dir ||= ENV["EJSON_KEYDIR"]
       parse_opts()
       @stdin = false if @command == COMMAND_INIT
+      @stdin = false unless COMMANDS.includes? @command
       puts "Run command #{@command.colorize(:cyan)} ..." if @debug
       puts "Key dir #{@key_dir.colorize(:cyan)}" if @debug
       puts "STDIN enabled: #{@stdin.to_s.colorize(:cyan)}" if @debug
@@ -157,11 +158,17 @@ module EncJson
         puts parser
         exit(1)
       end
+
     end
 
   end
 
-  app = App.new
-  app.run()
+  begin
+    app = App.new
+    app.run()
+  rescue
+    # $ encjson encrypt -f sample/env.secured.json | encjson decryp
+    # Unhandled exception: Error writing file: Broken pipe (IO::Error)
+  end
 
 end
