@@ -51,14 +51,12 @@ module EncJson
         puts " => 💪 value for key #{k.to_s.colorize(:magenta)} is already encrypted" if @debug
         val # value is already encrypted, don't touch it!
       else
-        crypted : Slice(UInt8) = CryptoUtils.encrypt(message: val, shared_key: @crypto_shared) # Bytes = Slice(UInt8)
-        crypted_base64 = Base64.strict_encode(crypted)
-
-        # blake2b : Slice(UInt8) = CryptoUtils.blake2b(message: crypted_base64, key: @priv_key.to_slice)
-        # blake2b_base64 = Base64.strict_encode(blake2b)
+        hash : Slice(UInt8) = CryptoUtils.blake2b(message: val, key: @priv_key.to_slice)
+        crypted : Slice(UInt8) = CryptoUtils.encrypt(message: "#{val}:#{hash.hexstring}", shared_key: @crypto_shared) # Bytes = Slice(UInt8)
+        crypted_b64 = Base64.strict_encode(crypted)
 
         # "#{TYPE}#{BEGIN}@api=#{API}:@data=#{crypted_base64}:@hash=#{blake2b_base64}#{END}"
-        "#{TYPE}#{BEGIN}@api=#{API}:@data=#{crypted_base64}#{END}"
+        "#{TYPE}#{BEGIN}@api=#{API}:@box=#{crypted_b64}#{END}"
       end
     end
 
@@ -70,47 +68,38 @@ module EncJson
         puts " => 💪 value for key #{k.to_s.colorize(:magenta)} is already decrypted" if @debug
         val # value is already decrypted, don't touch it!
       else
-        data_field = get_data_field(val)
-        data_base64_decoded : Bytes = Base64.decode(data_field)
+        box_field = get_box_field(val)
+        box_b64_decoded : Bytes = Base64.decode(box_field)
 
-        # hash_field = get_hash_field(val)
-        # hash_base64_decoded : Bytes = Base64.decode(hash_field)
+        decrypted = CryptoUtils.decrypt(message: box_b64_decoded, shared_key: @crypto_shared)
 
-        decrypted = CryptoUtils.decrypt(message: data_base64_decoded, shared_key: @crypto_shared)
+        data = decrypted[0..-130]
+        box_data_hash = decrypted[-128..]
 
-        # check hash
-        # blake2b : Slice(UInt8) = CryptoUtils.blake2b(message: data_field, key: @priv_key.to_slice)
-        # if blake2b == hash_base64_decoded.to_slice
-        #   decrypted
-        # else
-        #   k = key || "(empty)"
-        #   puts " => ❗ hash doesn't match for key #{k.to_s.colorize(:magenta)} can't decrypt!" if @debug
-        #   val # don't encrypt if hash fail!
-        # end
-        decrypted
+        data_hash : Slice(UInt8) = CryptoUtils.blake2b(message: data, key: @priv_key.to_slice)
+
+        if box_data_hash == data_hash.hexstring
+          data
+        else
+          k = key || "(empty)"
+          puts " => ❗ hash doesn't match for key #{k.to_s.colorize(:magenta)} can't decrypt!" if @debug
+          val # don't encrypt if hash fail!
+        end
       end
+
     end
 
-    def get_data_field(val)
-      match = /^EncJson\[\@api\=(.*):\@data\=(.*)\]$/ix.match(val)
+    def get_box_field(val)
+      match = /^EncJson\[\@api\=(.*):\@box\=(.*)\]$/ix.match(val)
       if match
         match[2]
       else
         val
       end
     end
-    
-    # def get_hash_field(val)
-    #   match = /^EncJson\[\@api\=(.*):\@data\=(.*):\@hash\=(.*)\]$/ix.match(val)
-    #   if match
-    #     match[3]
-    #   else
-    #     val
-    #   end
-    # end
 
     def encrypted?(val)
-      match = /^EncJson\[\@api\=(.*):\@data\=(.*)\]$/ix.match(val)
+      match = /^EncJson\[\@api\=(.*):\@box\=(.*)\]$/ix.match(val)
       if match
         true
       else
