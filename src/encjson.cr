@@ -12,16 +12,16 @@ module EncJson
 
   class App
 
-    VERSION = "1.1.0"
     NAME = "encjson"
 
     COMMAND_INIT = :init
     COMMAND_ENCRYPT = :encrypt
     COMMAND_DECRYPT = :decrypt
+    COMMAND_ENV = :env
 
     DEFAULT_KEY_SIZE = 32
 
-    COMMANDS = [COMMAND_INIT, COMMAND_ENCRYPT, COMMAND_DECRYPT]
+    COMMANDS = [COMMAND_INIT, COMMAND_ENCRYPT, COMMAND_DECRYPT, COMMAND_ENV]
 
     @key_dir : String | Nil
     @key_size : Int32
@@ -52,6 +52,8 @@ module EncJson
         command_enc_dec()
       when COMMAND_DECRYPT
         command_enc_dec()
+      when COMMAND_ENV
+        command_env()
       else
         puts "Command #{@command.to_s.colorize(:red)} not implemented yet!"
       end
@@ -104,6 +106,19 @@ module EncJson
       end
     end
 
+    private def command_env
+      puts " => 💾 file_name: #{@file_name}" if @debug
+      puts " => 💾 file_name_out: #{@file_name_out}" if @debug
+
+      JsonUtils.with_file(@file_name, @stdin) do |content|
+        JsonUtils.with_content(content) do |json|
+          utils = JsonUtils.new(json: json, key_dir: @key_dir, command: @command, debug: @debug)
+          enc_dec = utils.enc_dec()
+          puts enc_dec
+        end
+      end
+    end
+
     private def parse_opts
       parser = OptionParser.new do |parser|
         parser.banner = "Usage: ejson [subcommand] [arguments]"
@@ -138,6 +153,16 @@ module EncJson
           parser.on("-o NAME", "--output=NAME", "Specify JSON output file name") { |_name| @file_name_out = _name }
           parser.on("-w", "--rewrite", "Rewrite input file!") { @rewrite = true }
         end
+
+        parser.on(COMMAND_ENV.to_s, "Generate `export` commands from JSON (must include element `env` or `environment`!)") do
+        @command = COMMAND_ENV
+        parser.banner = "Usage: #{NAME} #{COMMAND_ENV} [arguments]"
+        parser.on("-k DIR", "--keydir=DIR", "Specify the directory name where the private and public keys are stored") { |_name| @key_dir = _name }
+        parser.on("-f NAME", "--file=NAME", "Specify JSON input file name") do |_name|
+          @file_name = _name
+          @stdin = false
+        end
+      end
 
         parser.on("-d", "--debug", "Enabled debug output") { @debug = true }
         parser.on("-h", "--help", "Show this help") do

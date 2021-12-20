@@ -1,5 +1,5 @@
 name: ejson
-version: 1.1.1
+version: 1.2.0
 
 authors:
   - Martin Mareš <martin.mares@seznam.cz>
@@ -7,8 +7,6 @@ authors:
 targets:
   encjson:
     main: src/encjson.cr
-#  eyaml:
-#    main: src/eyaml.cr
 
 dependencies:
   monocypher:
