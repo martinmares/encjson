@@ -16,7 +16,7 @@ module EncJson
 
     def initialize(@pub_key : String | Nil, @key_dir : String | Nil, @debug : Bool = false)
       @priv_key = ""
-      @priv_key_not_found = false
+      @priv_key_not_found = true
 
       # Temporary only!
       @crypto_private = Crypto::SecretKey.new
@@ -25,21 +25,27 @@ module EncJson
 
       if @pub_key
         puts "Creating SecureBox:" if @debug
-        Utils.with_dir(@key_dir) do |dir|
-          read_from = Path[dir] / @pub_key.as(String)
-          if File.exists? read_from
-            @priv_key = File.read(read_from).chomp
-            puts " => 💾 read private key from: #{read_from.to_s.colorize(:green)}" if @debug
-            puts " => 👷 prepare encryption key pair ..." if @debug
-            @crypto_private = CryptoUtils.private_key(@priv_key)
-            @crypto_public = CryptoUtils.public_key(@pub_key.as(String))
-            @crypto_shared = CryptoUtils.shared_key(private_key: @crypto_private, public_key: @crypto_public)
-          else
-            @priv_key_not_found = true
+        if ENV["ENCJSON_PRIVATE_KEY"]?
+          puts " => 💾 read private key from env var ENCJSON_PRIVATE_KEY" if @debug
+          puts " => 👷 prepare encryption key pair ..." if @debug
+          @crypto_private = CryptoUtils.private_key(ENV["ENCJSON_PRIVATE_KEY"])
+          @crypto_public = CryptoUtils.public_key(@pub_key.as(String))
+          @crypto_shared = CryptoUtils.shared_key(private_key: @crypto_private, public_key: @crypto_public)
+          @priv_key_not_found = false
+        else
+          Utils.with_dir(@key_dir) do |dir|
+            read_from = Path[dir] / @pub_key.as(String)
+            if File.exists? read_from
+              @priv_key = File.read(read_from).chomp
+              puts " => 💾 read private key from: #{read_from.to_s.colorize(:green)}" if @debug
+              puts " => 👷 prepare encryption key pair ..." if @debug
+              @crypto_private = CryptoUtils.private_key(@priv_key)
+              @crypto_public = CryptoUtils.public_key(@pub_key.as(String))
+              @crypto_shared = CryptoUtils.shared_key(private_key: @crypto_private, public_key: @crypto_public)
+              @priv_key_not_found = false
+            end
           end
         end
-      else
-        @priv_key_not_found = true
       end
     end
 
