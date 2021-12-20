@@ -7,10 +7,14 @@ authors:
 targets:
   encjson:
     main: src/encjson.cr
+  encjson-web:
+    main: src/encjson-web.cr
 
 dependencies:
   monocypher:
     github: konovod/monocypher
+  kemal:
+    github: kemalcr/kemal
 
 crystal: 1.2.2
 
