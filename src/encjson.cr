@@ -190,13 +190,7 @@ module EncJson
 
   end
 
-  #begin
-    app = App.new
-    app.run()
-  #rescue
-    # puts "Exception in main thread!".colorize(:red)
-    # $ encjson encrypt -f sample/env.secured.json | encjson decryp
-    # Unhandled exception: Error writing file: Broken pipe (IO::Error)
-  #end
+  app = App.new
+  app.run()
 
 end
