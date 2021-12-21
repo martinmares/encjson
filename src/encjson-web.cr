@@ -26,7 +26,7 @@ module Encjson::Web
         private_key = env.params.body["private_key"]
         content_decrypted = env.params.body["content"]
         tempfile = App.create_temp with: content_decrypted
-        puts "Temp file is: #{tempfile.path}" if @debug
+        puts "Temp file is: #{tempfile.path}" if ENV["KEMAL_ENV"]? == "development"
         exit_code, cmd_result = App.run cmd: "encjson",
                                         env: {"ENCJSON_PRIVATE_KEY" => "\"#{private_key}\""},
                                         args: ["encrypt", "-f", "\"#{tempfile.path}\""]
@@ -43,7 +43,7 @@ module Encjson::Web
         private_key = env.params.body["private_key"]
         content_encrypted = env.params.body["content"]
         tempfile = App.create_temp with: content_encrypted
-        puts "Temp file is: #{tempfile.path}" if @debug
+        puts "Temp file is: #{tempfile.path}" if ENV["KEMAL_ENV"]? == "development"
         exit_code, cmd_result = App.run cmd: "encjson",
                                         env: {"ENCJSON_PRIVATE_KEY" => "\"#{private_key}\""},
                                         args: ["decrypt", "-f", "\"#{tempfile.path}\""]
