@@ -1,14 +1,21 @@
 require "kemal"
 require "json"
-require "../src/encjson"
+require "../src/crypto_utils"
+require "../src/secure_string"
+require "../src/string_utils"
 
 module Encjson::Web
 
+  ENV_ENCJSON_PRIVATE_KEY = "ENCJSON_PRIVATE_KEY"
   class App
 
-    @content : String
+    DEFAULT_KEY_SIZE = 32
 
-    def initialize(@content = "")
+    @content : String
+    @private_key : String
+    @public_key : String
+
+    def initialize(@content = "", @private_key = "", @public_key = "", @key_size = DEFAULT_KEY_SIZE)
     end
 
     def run
@@ -20,6 +27,15 @@ module Encjson::Web
       get "/healthz" do |env|
         env.response.content_type = "application/json"
         {"status": "UP"}.to_json
+      end
+
+      get "/init" do
+        secure = EncJson::SecureString.new()
+        priv_str = secure.random_str(@key_size, set: :extended)
+        @private_key = EncJson::StringUtils.str_to_hex(priv_str)
+        pub_str = secure.random_str(@key_size, set: :extended)
+        @public_key = EncJson::StringUtils.str_to_hex(pub_str)
+        render "src/views/get/init.ecr", "src/views/layout.ecr"
       end
 
       get "/encrypt" do
@@ -53,7 +69,7 @@ module Encjson::Web
       tempfile = create_temp with: content
       begin
         exit_code, cmd_result = run cmd: "encjson",
-                                        env: {EncJson::ENV_ENCJSON_PRIVATE_KEY => "#{private_key}"},
+                                        env: {ENV_ENCJSON_PRIVATE_KEY => "#{private_key}"},
                                         args: [cmd.to_s, "-f", "#{tempfile.path}"]
         if exit_code == 0
           content = cmd_result
