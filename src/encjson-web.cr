@@ -1,6 +1,5 @@
 require "kemal"
 require "json"
-require "uuid"
 
 module Encjson::Web
   class App
@@ -70,7 +69,7 @@ module Encjson::Web
     end
 
     def self.create_temp(with content)
-      tempfile = File.tempfile(UUID.random.to_s) do |file|
+      tempfile = File.tempfile() do |file|
         file.print(content)
       end
       tempfile
