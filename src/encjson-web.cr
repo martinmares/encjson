@@ -11,13 +11,6 @@ module Encjson::Web
 
     DEFAULT_KEY_SIZE = 32
 
-    @content : String
-    @private_key : String
-    @public_key : String
-
-    def initialize(@content = "", @private_key = "", @public_key = "", @key_size = DEFAULT_KEY_SIZE)
-    end
-
     def run
 
       get "/" do
@@ -31,10 +24,10 @@ module Encjson::Web
 
       get "/init" do
         secure = EncJson::SecureString.new()
-        priv_str = secure.random_str(@key_size, set: :extended)
-        @private_key = EncJson::StringUtils.str_to_hex(priv_str)
-        pub_str = secure.random_str(@key_size, set: :extended)
-        @public_key = EncJson::StringUtils.str_to_hex(pub_str)
+        priv_str = secure.random_str(DEFAULT_KEY_SIZE, set: :extended)
+        private_key = EncJson::StringUtils.str_to_hex(priv_str)
+        pub_str = secure.random_str(DEFAULT_KEY_SIZE, set: :extended)
+        public_key = EncJson::StringUtils.str_to_hex(pub_str)
         render "src/views/get/init.ecr", "src/views/layout.ecr"
       end
 
@@ -48,14 +41,14 @@ module Encjson::Web
 
       post "/encrypt" do |env|
         with_temp(env, :encrypt) do |result|
-          @content = result
+          content = result
           render "src/views/post/encrypt.ecr", "src/views/layout.ecr"
         end
       end
 
       post "/decrypt" do |env|
         with_temp(env, :decrypt) do |result|
-          @content = result
+          content = result
           render "src/views/post/decrypt.ecr", "src/views/layout.ecr"
         end
       end
