@@ -12,7 +12,7 @@ targets:
 
 dependencies:
   monocypher:
-    github: konovod/monocypher
+    github: martinmares/monocypher.cr
   kemal:
     github: kemalcr/kemal
 

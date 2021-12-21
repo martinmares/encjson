@@ -17,8 +17,8 @@ shards:
     version: 0.6.1
 
   monocypher:
-    git: https://github.com/konovod/monocypher.git
-    version: 3.1.2+git.commit.0d24e95af5abea5e4c4af0b3a2fd20af4427457d
+    git: https://github.com/martinmares/monocypher.cr.git
+    version: 3.1.2+git.commit.550f11baea31cba1b956c6613a95bb1f9df415d0
 
   radix:
     git: https://github.com/luislavena/radix.git
