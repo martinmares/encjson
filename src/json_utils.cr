@@ -53,16 +53,15 @@ module EncJson
       elsif @json.as_a?
         result = parse_array(@json)
       end
-      
+
       if @command == App::COMMAND_ENV && result.is_a?(Hash(String, EncJson::JsonUtils::JsonType))
         env_vars = Hash(String, EncJson::JsonUtils::JsonType).new
-        env_out = Hash(String, String).new
         env_vars = result["env"].as?(Hash(String, EncJson::JsonUtils::JsonType)) if result.has_key? "env"
         env_vars = result["environment"].as?(Hash(String, EncJson::JsonUtils::JsonType)) if result.has_key? "environment"
         if env_vars
-          str = String.build do |str|
+          str = String.build do |sb|
             env_vars.each do |k, v|
-              str << "export #{k}=\"#{v.to_s}\"\n"
+              sb << "export #{k}=\"#{v}\"\n"
             end
           end
           result = str
@@ -89,9 +88,9 @@ module EncJson
           result[key] = val.as_bool
         elsif val.as_s?
           if @command == App::COMMAND_ENCRYPT
-            result[key] = @secure_box.encrypt(key: key, val: val.as_s) 
+            result[key] = @secure_box.encrypt(key: key, val: val.as_s)
           elsif @command == App::COMMAND_DECRYPT || @command == App::COMMAND_ENV
-            result[key] = @secure_box.decrypt(key: key, val: val.as_s) 
+            result[key] = @secure_box.decrypt(key: key, val: val.as_s)
           else
             result[key] = val.as_s # if you don't know, don't touch it!
           end

@@ -17,11 +17,11 @@ module EncJson
         len = EXTENDED_CHARS.size
         from_chars = EXTENDED_CHARS
       else
-        len = SIMPLE_CHARS.size        
+        len = SIMPLE_CHARS.size
         from_chars = SIMPLE_CHARS
       end
 
-      (0..how_long-1).each do |i|
+      (0..how_long-1).each do
         rnd = Random::Secure.rand(len)
         from_chars[rnd].to_s(io)
       end

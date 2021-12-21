@@ -34,7 +34,7 @@ module EncJson
       Crypto.decrypt(key: shared_key, input: message_bytes, output: ciphertext)
       String.new(ciphertext)
     end
-  
+
   end
 
 end

@@ -125,7 +125,7 @@ module EncJson
     end
 
     private def parse_opts
-      parser = OptionParser.new do |parser|
+      opt_parser = OptionParser.new do |parser|
         parser.banner = "Usage: ejson [subcommand] [arguments]"
 
         parser.on(COMMAND_INIT.to_s, "#{COMMAND_INIT.to_s.capitalize} private and public key") do
@@ -160,14 +160,14 @@ module EncJson
         end
 
         parser.on(COMMAND_ENV.to_s, "Generate `export` commands from JSON (must include element `env` or `environment`!)") do
-        @command = COMMAND_ENV
-        parser.banner = "Usage: #{NAME} #{COMMAND_ENV} [arguments]"
-        parser.on("-k DIR", "--keydir=DIR", "Specify the directory name where the private and public keys are stored") { |_name| @key_dir = _name }
-        parser.on("-f NAME", "--file=NAME", "Specify JSON input file name") do |_name|
-          @file_name = _name
-          @stdin = false
+          @command = COMMAND_ENV
+          parser.banner = "Usage: #{NAME} #{COMMAND_ENV} [arguments]"
+          parser.on("-k DIR", "--keydir=DIR", "Specify the directory name where the private and public keys are stored") { |_name| @key_dir = _name }
+          parser.on("-f NAME", "--file=NAME", "Specify JSON input file name") do |_name|
+            @file_name = _name
+            @stdin = false
+          end
         end
-      end
 
         parser.on("-d", "--debug", "Enabled debug output") { @debug = true }
         parser.on("-h", "--help", "Show this help") do
@@ -182,10 +182,10 @@ module EncJson
         end
       end
 
-      parser.parse
+      opt_parser.parse
 
       unless COMMANDS.includes? @command
-        puts parser
+        puts opt_parser
         exit(1)
       end
 

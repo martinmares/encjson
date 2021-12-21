@@ -1,7 +1,7 @@
 module EncJson
 
   class StringUtils
-    
+
     MAPPING = "0123456789abcdef".chars
 
     def self.hex_to_str(hex) : String
@@ -10,7 +10,7 @@ module EncJson
         result << (MAPPING.index(pair.first).to_s.to_u8 << 4)
         result[result.size - 1] |= MAPPING.index(pair.last).to_s.to_u8
       end
-  
+
       d = result.to_unsafe.to_slice(result.size)
       String.new(d)
     end
@@ -20,12 +20,7 @@ module EncJson
     end
 
     def self.has_content?(str)
-      if str.nil?
-        return false
-      elsif str.size == 0
-        return false
-      end
-      return true
+      ! str.empty?
     end
 
   end
