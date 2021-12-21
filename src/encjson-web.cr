@@ -10,6 +10,11 @@ module Encjson::Web
         render "src/views/index.ecr", "src/views/layout.ecr"
       end
 
+      get "/healthz" do |env|
+        env.response.content_type = "application/json"
+        {"status": "UP"}.to_json
+      end
+
       get "/encrypt" do
         render "src/views/get/encrypt.ecr", "src/views/layout.ecr"
       end
