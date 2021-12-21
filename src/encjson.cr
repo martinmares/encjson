@@ -10,6 +10,9 @@ require "../src/crypto_utils"
 
 module EncJson
 
+  ENV_ENCJSON_KEYDIR = "ENCJSON_KEYDIR"
+  ENV_ENCJSON_PRIVATE_KEY = "ENCJSON_PRIVATE_KEY"
+
   class App
 
     NAME = "encjson"
@@ -34,10 +37,10 @@ module EncJson
       @debug = false
       @stdin = true
       @rewrite = false
-      unless ENV["ENCJSON_KEYDIR"]?
-        ENV["ENCJSON_KEYDIR"] ||= Path["~/.encjson"].expand(home: true).to_s
+      unless ENV[ENV_ENCJSON_KEYDIR]?
+        ENV[ENV_ENCJSON_KEYDIR] ||= Path["~/.encjson"].expand(home: true).to_s
       end
-      @key_dir ||= ENV["ENCJSON_KEYDIR"]
+      @key_dir ||= ENV[ENV_ENCJSON_KEYDIR]
       parse_opts()
       @stdin = false if @command == COMMAND_INIT
       @stdin = false unless COMMANDS.includes? @command

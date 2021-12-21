@@ -1,8 +1,16 @@
 require "kemal"
 require "json"
+require "../src/encjson"
 
 module Encjson::Web
+
   class App
+
+    @content : String
+
+    def initialize(@content = "")
+    end
+
     def run
 
       get "/" do
@@ -23,41 +31,40 @@ module Encjson::Web
       end
 
       post "/encrypt" do |env|
-        private_key = env.params.body["private_key"]
-        content_decrypted = env.params.body["content"]
-        tempfile = App.create_temp with: content_decrypted
-        exit_code, cmd_result = App.run cmd: "encjson",
-                                        env: {"ENCJSON_PRIVATE_KEY" => "#{private_key}"},
-                                        args: ["encrypt", "-f", "#{tempfile.path}"]
-        tempfile.delete
-        if exit_code == 0
-          content = cmd_result
-        else
-          content = content_decrypted
+        with_temp(env, :encrypt) do |result|
+          @content = result
+          render "src/views/post/encrypt.ecr", "src/views/layout.ecr"
         end
-        render "src/views/post/encrypt.ecr", "src/views/layout.ecr"
       end
 
       post "/decrypt" do |env|
-        private_key = env.params.body["private_key"]
-        content_encrypted = env.params.body["content"]
-        tempfile = App.create_temp with: content_encrypted
-        exit_code, cmd_result = App.run cmd: "encjson",
-                                        env: {"ENCJSON_PRIVATE_KEY" => "#{private_key}"},
-                                        args: ["decrypt", "-f", "#{tempfile.path}"]
-        tempfile.delete
-        if exit_code == 0
-          content = cmd_result
-        else
-          content = content_encrypted
+        with_temp(env, :decrypt) do |result|
+          @content = result
+          render "src/views/post/decrypt.ecr", "src/views/layout.ecr"
         end
-        render "src/views/post/decrypt.ecr", "src/views/layout.ecr"
       end
 
       Kemal.run
     end
 
-    def self.run(*, cmd, env, args)
+    def with_temp(env, cmd)
+      private_key = env.params.body["private_key"]
+      content = env.params.body["content"]
+      tempfile = create_temp with: content
+      begin
+        exit_code, cmd_result = run cmd: "encjson",
+                                        env: {EncJson::ENV_ENCJSON_PRIVATE_KEY => "#{private_key}"},
+                                        args: [cmd.to_s, "-f", "#{tempfile.path}"]
+        if exit_code == 0
+          content = cmd_result
+        end
+      ensure
+        tempfile.delete if File.exists?(tempfile.path)
+      end
+      yield(content)
+    end
+
+    def run(*, cmd, env, args)
       stdout = IO::Memory.new
       stderr = IO::Memory.new
       status = Process.run(cmd, args: args, env: env, output: stdout, error: stderr)
@@ -68,7 +75,7 @@ module Encjson::Web
       end
     end
 
-    def self.create_temp(with content)
+    def create_temp(with content)
       tempfile = File.tempfile() do |file|
         file.print(content)
       end

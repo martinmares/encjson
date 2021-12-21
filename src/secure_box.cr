@@ -25,10 +25,10 @@ module EncJson
 
       if @pub_key
         puts "Creating SecureBox:" if @debug
-        if ENV["ENCJSON_PRIVATE_KEY"]?
-          puts " => 💾 read private key from env var ENCJSON_PRIVATE_KEY" if @debug
+        if ENV[EncJson::ENV_ENCJSON_PRIVATE_KEY]?
+          puts " => 💾 read private key from env var #{EncJson::ENV_ENCJSON_PRIVATE_KEY}" if @debug
           puts " => 👷 prepare encryption key pair ..." if @debug
-          @crypto_private = CryptoUtils.private_key(ENV["ENCJSON_PRIVATE_KEY"].chomp)
+          @crypto_private = CryptoUtils.private_key(ENV[EncJson::ENV_ENCJSON_PRIVATE_KEY].chomp)
           @crypto_public = CryptoUtils.public_key(@pub_key.as(String))
           @crypto_shared = CryptoUtils.shared_key(private_key: @crypto_private, public_key: @crypto_public)
           @priv_key_not_found = false
