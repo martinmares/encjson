@@ -27,8 +27,8 @@ module Encjson::Web
         content_decrypted = env.params.body["content"]
         tempfile = App.create_temp with: content_decrypted
         exit_code, cmd_result = App.run cmd: "encjson",
-                                        env: {"ENCJSON_PRIVATE_KEY" => "#{private_key}"},
-                                        args: ["encrypt", "-f", "#{tempfile.path}"]
+                                        env: {"ENCJSON_PRIVATE_KEY" => "\"#{private_key}\""},
+                                        args: ["encrypt", "-f", "\"#{tempfile.path}\""]
         tempfile.delete
         if exit_code == 0
           content = cmd_result
@@ -43,8 +43,8 @@ module Encjson::Web
         content_encrypted = env.params.body["content"]
         tempfile = App.create_temp with: content_encrypted
         exit_code, cmd_result = App.run cmd: "encjson",
-                                        env: {"ENCJSON_PRIVATE_KEY" => "#{private_key}"},
-                                        args: ["decrypt", "-f", "#{tempfile.path}"]
+                                        env: {"ENCJSON_PRIVATE_KEY" => "\"#{private_key}\""},
+                                        args: ["decrypt", "-f", "\"#{tempfile.path}\""]
         tempfile.delete
         if exit_code == 0
           content = cmd_result
