@@ -100,7 +100,7 @@ module EncJson
               enc_dec = utils.enc_dec()
               if @rewrite
                 rewrite_file = @file_name
-                puts "Try rewrite content:"
+                puts "Try rewrite content:" if @debug
                 Utils.with_file(rewrite_file, "w") do |f|
                   f.puts enc_dec
                 end
