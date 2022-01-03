@@ -93,16 +93,21 @@ module EncJson
         JsonUtils.with_content(content) do |json|
           if JsonUtils.has_public_key?(json)
             utils = JsonUtils.new(json: json, key_dir: @key_dir, command: @command, debug: @debug)
-            enc_dec = utils.enc_dec()
-            if @rewrite
-              rewrite_file = @file_name
-              puts "Try rewrite content:"
-              Utils.with_file(rewrite_file, "w") do |f|
-                f.puts enc_dec
-              end
-              puts " => 💾 rewrited: #{rewrite_file.to_s.colorize(:green)}"
+            if utils.priv_key_not_found?
+              puts " => 🔑 private key #{"not found!".colorize(:red)}" if @debug
+              puts content
             else
-              puts enc_dec
+              enc_dec = utils.enc_dec()
+              if @rewrite
+                rewrite_file = @file_name
+                puts "Try rewrite content:"
+                Utils.with_file(rewrite_file, "w") do |f|
+                  f.puts enc_dec
+                end
+                puts " => 💾 rewrited: #{rewrite_file.to_s.colorize(:green)}" if @debug
+              else
+                puts enc_dec
+              end
             end
           else
             puts content

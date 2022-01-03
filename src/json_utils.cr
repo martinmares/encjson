@@ -40,6 +40,10 @@ module EncJson
       ! json[JSON_PUBLIC_KEY_NAME]?.nil?
     end
 
+    def priv_key_not_found?
+      @secure_box.priv_key_not_found?
+    end
+
     private def self.read_from_stdin : String
       STDIN.gets_to_end
     end
