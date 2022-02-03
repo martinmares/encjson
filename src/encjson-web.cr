@@ -1,7 +1,8 @@
 require "kemal"
 require "json"
+require "random/secure"
+
 require "../src/crypto_utils"
-require "../src/secure_string"
 require "../src/string_utils"
 
 module Encjson::Web
@@ -23,11 +24,8 @@ module Encjson::Web
       end
 
       get "/init" do
-        secure = EncJson::SecureString.new()
-        priv_str = secure.random_str(DEFAULT_KEY_SIZE, set: :extended)
-        _private_key = EncJson::StringUtils.str_to_hex(priv_str)
-        pub_str = secure.random_str(DEFAULT_KEY_SIZE, set: :extended)
-        _public_key = EncJson::StringUtils.str_to_hex(pub_str)
+        _private_key = Random::Secure.hex(DEFAULT_KEY_SIZE).to_s
+        _public_key = Random::Secure.hex(DEFAULT_KEY_SIZE).to_s
         render "src/views/get/init.ecr", "src/views/layout.ecr"
       end
 

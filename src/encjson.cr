@@ -1,8 +1,8 @@
 require "monocypher"
 require "option_parser"
 require "colorize"
+require "random/secure"
 
-require "../src/secure_string"
 require "../src/string_utils"
 require "../src/utils"
 require "../src/json_utils"
@@ -65,12 +65,8 @@ module EncJson
     end
 
     private def command_init
-      secure = SecureString.new()
-
-      priv_str = secure.random_str(@key_size, set: :extended)
-      priv_hex = StringUtils.str_to_hex(priv_str)
-      pub_str = secure.random_str(@key_size, set: :extended)
-      pub_hex = StringUtils.str_to_hex(pub_str)
+      priv_hex = Random::Secure.hex(@key_size)
+      pub_hex = Random::Secure.hex(@key_size)
 
       puts "Generated key pair (hex):"
       puts " => 🔑 private: #{priv_hex}"
