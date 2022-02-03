@@ -12,16 +12,18 @@ module EncJson
     BEGIN = "["
     END = "]"
 
-    @crypto_shared : Crypto::SymmetricKey
+    @crypto_private : Crypto::SecretKey | Nil
+    @crypto_public : Crypto::PublicKey | Nil
+    @crypto_shared : Crypto::SymmetricKey | Nil
+    @priv_key : String | Nil
 
     def initialize(@pub_key : String | Nil, @key_dir : String | Nil, @debug : Bool = false)
-      @priv_key = ""
+      @priv_key = nil
       @priv_key_not_found = true
 
-      # Temporary only!
-      @crypto_private = Crypto::SecretKey.new
-      @crypto_public = Crypto::PublicKey.new(secret: @crypto_private)
-      @crypto_shared = CryptoUtils.shared_key(private_key: @crypto_private, public_key: @crypto_public)
+      @crypto_private = nil
+      @crypto_public = nil
+      @crypto_shared = nil
 
       if @pub_key
         puts "Creating SecureBox:" if @debug
@@ -30,7 +32,7 @@ module EncJson
           puts " => 👷 prepare encryption key pair ..." if @debug
           @crypto_private = CryptoUtils.private_key(ENV[EncJson::ENV_ENCJSON_PRIVATE_KEY].chomp)
           @crypto_public = CryptoUtils.public_key(@pub_key.as(String))
-          @crypto_shared = CryptoUtils.shared_key(private_key: @crypto_private, public_key: @crypto_public)
+          @crypto_shared = CryptoUtils.shared_key(private_key: @crypto_private.as(Crypto::SecretKey), public_key: @crypto_public.as(Crypto::PublicKey))
           @priv_key_not_found = false
         else
           Utils.with_dir(@key_dir) do |dir|
@@ -39,9 +41,9 @@ module EncJson
               @priv_key = File.read(read_from).chomp
               puts " => 💾 read private key from: #{read_from.to_s.colorize(:green)}" if @debug
               puts " => 👷 prepare encryption key pair ..." if @debug
-              @crypto_private = CryptoUtils.private_key(@priv_key)
+              @crypto_private = CryptoUtils.private_key(@priv_key.as(String)) if @priv_key
               @crypto_public = CryptoUtils.public_key(@pub_key.as(String))
-              @crypto_shared = CryptoUtils.shared_key(private_key: @crypto_private, public_key: @crypto_public)
+              @crypto_shared = CryptoUtils.shared_key(private_key: @crypto_private.as(Crypto::SecretKey), public_key: @crypto_public.as(Crypto::PublicKey))
               @priv_key_not_found = false
             end
           end
@@ -61,7 +63,7 @@ module EncJson
         puts " => 💪 value for key #{k.to_s.colorize(:magenta)} is already encrypted" if @debug
         val # value is already encrypted, don't touch it!
       else
-        crypted : Slice(UInt8) = CryptoUtils.encrypt(message: val, shared_key: @crypto_shared) # Bytes = Slice(UInt8)
+        crypted : Slice(UInt8) = CryptoUtils.encrypt(message: val, shared_key: @crypto_shared.as(Crypto::SymmetricKey)) # Bytes = Slice(UInt8)
         crypted_b64 = Base64.strict_encode(crypted)
 
         "#{TYPE}#{BEGIN}@api=#{API}:@box=#{crypted_b64}#{END}"
@@ -78,7 +80,7 @@ module EncJson
       else
         box_field = get_box_field(val)
         box_b64_decoded : Bytes = Base64.decode(box_field)
-        decrypted = CryptoUtils.decrypt(message: box_b64_decoded, shared_key: @crypto_shared)
+        decrypted = CryptoUtils.decrypt(message: box_b64_decoded, shared_key: @crypto_shared.as(Crypto::SymmetricKey))
 
         decrypted
       end
