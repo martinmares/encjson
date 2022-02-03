@@ -46,7 +46,10 @@ $ cp bin/encjson /user/local/src/encjson/bin/encjson-alpine-static
 ```
 ## Development
 
-TODO: Write development instructions here
+```bash
+$ sentry -b "crystal build ./src/encjson-web.cr -o ./bin/encjson-web" \
+         -r "./bin/encjson-web"
+```
 
 ## Contributing
 
