@@ -94,7 +94,9 @@ module EncJson
           if @command == App::COMMAND_ENCRYPT
             result[key] = @secure_box.encrypt(key: key, val: val.as_s)
           elsif @command == App::COMMAND_DECRYPT || @command == App::COMMAND_ENV
-            result[key] = @secure_box.decrypt(key: key, val: val.as_s)
+            decrypted_val = @secure_box.decrypt(key: key, val: val.as_s)
+            decrypted_val = escape_special_chars(decrypted_val) if @command == App::COMMAND_ENV
+            result[key] = decrypted_val
           else
             result[key] = val.as_s # if you don't know, don't touch it!
           end
@@ -122,7 +124,9 @@ module EncJson
           if @command == App::COMMAND_ENCRYPT
             result << @secure_box.encrypt(key: nil, val: val.as_s)
           elsif @command == App::COMMAND_DECRYPT || @command == App::COMMAND_ENV
-            result << @secure_box.decrypt(key: nil, val: val.as_s)
+            decrypted_val = @secure_box.decrypt(key: nil, val: val.as_s)
+            decrypted_val = escape_special_chars(decrypted_val) if @command == App::COMMAND_ENV
+            result << decrypted_val
           else
             result << val.as_s # if you don't know, don't touch it!
           end
@@ -131,6 +135,14 @@ module EncJson
         end
       end
       result
+    end
+
+    def escape_special_chars(value)
+      if value
+        value.gsub("$", "\\$").gsub("\"", "\\\"")
+      else
+        value
+      end
     end
 
   end
