@@ -69,8 +69,8 @@ module EncJson
       pub_hex = Random::Secure.hex(@key_size)
 
       puts "Generated key pair (hex):"
-      puts " => 🔑 private: #{priv_hex}"
       puts " => 🍺 public: #{pub_hex}"
+      puts " => 🔑 private: #{priv_hex}"
 
       Utils.with_dir(@key_dir) do |dir|
         save_to = Path[dir] / pub_hex
