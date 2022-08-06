@@ -1,5 +1,5 @@
 name: encjson
-version: 1.7.2
+version: 1.7.3
 
 authors:
   - Martin Mareš <martin.mares@seznam.cz>
@@ -16,6 +16,6 @@ dependencies:
   kemal:
     github: kemalcr/kemal
 
-crystal: 1.2.2
+crystal: 1.5.0
 
 license: MIT

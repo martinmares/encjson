@@ -1,3 +1,3 @@
 require "spec"
-require "../src/ejson"
+require "../src/encjson"
 require "../src/encjson-web"

@@ -127,7 +127,7 @@ module EncJson
 
     private def parse_opts
       opt_parser = OptionParser.new do |parser|
-        parser.banner = "Usage: ejson [subcommand] [arguments]"
+        parser.banner = "Usage: encjson [subcommand] [arguments]"
 
         parser.on(COMMAND_INIT.to_s, "#{COMMAND_INIT.to_s.capitalize} private and public key") do
           @command = COMMAND_INIT
