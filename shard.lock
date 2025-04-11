@@ -2,19 +2,19 @@ version: 2.0
 shards:
   backtracer:
     git: https://github.com/sija/backtracer.cr.git
-    version: 1.2.2
+    version: 1.2.4
 
   exception_page:
     git: https://github.com/crystal-loot/exception_page.git
-    version: 0.3.0
+    version: 0.4.1
 
   kemal:
     git: https://github.com/kemalcr/kemal.git
-    version: 1.3.0
+    version: 1.6.0
 
   monocypher:
     git: https://github.com/martinmares/monocypher.cr.git
-    version: 3.1.2+git.commit.550f11baea31cba1b956c6613a95bb1f9df415d0
+    version: 3.1.2+git.commit.64e8a2a71cd0662910e9a369fbe14c2413b3b475
 
   radix:
     git: https://github.com/luislavena/radix.git
