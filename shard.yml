@@ -1,5 +1,5 @@
 name: encjson
-version: 1.7.3
+version: 1.7.4
 
 authors:
   - Martin Mareš <martin.mares@seznam.cz>
@@ -13,9 +13,10 @@ targets:
 dependencies:
   monocypher:
     github: martinmares/monocypher.cr
+    commit: 64e8a2a71cd0662910e9a369fbe14c2413b3b475
   kemal:
     github: kemalcr/kemal
 
-crystal: 1.5.0
+crystal: 1.16.0
 
 license: MIT

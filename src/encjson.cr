@@ -9,18 +9,17 @@ require "../src/json_utils"
 require "../src/crypto_utils"
 
 module EncJson
-
-  ENV_ENCJSON_KEYDIR = "ENCJSON_KEYDIR"
+  VERSION                 = {{ `shards version`.strip.stringify }}
+  ENV_ENCJSON_KEYDIR      = "ENCJSON_KEYDIR"
   ENV_ENCJSON_PRIVATE_KEY = "ENCJSON_PRIVATE_KEY"
 
   class App
-
     NAME = "encjson"
 
-    COMMAND_INIT = :init
+    COMMAND_INIT    = :init
     COMMAND_ENCRYPT = :encrypt
     COMMAND_DECRYPT = :decrypt
-    COMMAND_ENV = :env
+    COMMAND_ENV     = :env
 
     DEFAULT_KEY_SIZE = 32
 
@@ -93,7 +92,7 @@ module EncJson
               puts " => 🔑 private key #{"not found!".colorize(:red)}" if @debug
               puts content
             else
-              enc_dec = utils.enc_dec()
+              enc_dec = utils.enc_dec
               if @rewrite
                 rewrite_file = @file_name
                 puts "Try rewrite content:" if @debug
@@ -119,7 +118,7 @@ module EncJson
       JsonUtils.with_file(@file_name, @stdin) do |content|
         JsonUtils.with_content(content) do |json|
           utils = JsonUtils.new(json: json, key_dir: @key_dir, command: @command, debug: @debug)
-          enc_dec = utils.enc_dec()
+          enc_dec = utils.enc_dec
           puts enc_dec
         end
       end
@@ -170,6 +169,11 @@ module EncJson
           end
         end
 
+        parser.on("-v", "--version", "Version") do
+          puts EncJson::VERSION
+          exit
+        end
+
         parser.on("-d", "--debug", "Enabled debug output") { @debug = true }
         parser.on("-h", "--help", "Show this help") do
           puts parser
@@ -189,12 +193,9 @@ module EncJson
         puts opt_parser
         exit(1)
       end
-
     end
-
   end
 
   app = App.new
-  app.run()
-
+  app.run
 end
