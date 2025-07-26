@@ -13,7 +13,7 @@ targets:
 dependencies:
   monocypher:
     github: martinmares/monocypher.cr
-    commit: 42392f1bb33bacc50f07857f50931a22e209c234
+    commit: 4c6744081d4b7597fbe7cbaf990837618b249397
   kemal:
     github: kemalcr/kemal
 
