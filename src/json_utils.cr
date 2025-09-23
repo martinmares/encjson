@@ -139,7 +139,7 @@ module EncJson
 
     def escape_special_chars(value)
       if value
-        value.gsub("$", "\\$").gsub("\"", "\\\"")
+        value.gsub("$", "\\$").gsub("\"", "\\\"").gsub("`", "\\`")
       else
         value
       end
