@@ -7,9 +7,7 @@ require "../src/secure_box"
 require "../src/encjson"
 
 module EncJson
-
   class JsonUtils
-
     JSON_PUBLIC_KEY_NAME = "_public_key"
 
     @pub_key : String | Nil
@@ -20,7 +18,7 @@ module EncJson
       @secure_box = SecureBox.new(pub_key: @pub_key, key_dir: @key_dir, debug: @debug)
     end
 
-    def self.with_file(file_name, from_stdin : Bool = false)
+    def self.with_file(file_name, from_stdin : Bool = false, &)
       if from_stdin
         content = read_from_stdin
       else
@@ -29,7 +27,7 @@ module EncJson
       yield(content)
     end
 
-    def self.with_content(content)
+    def self.with_content(content, &)
       if StringUtils.has_content?(content)
         json = JSON.parse(content)
         yield(json)
@@ -37,7 +35,7 @@ module EncJson
     end
 
     def self.has_public_key?(json : JSON::Any)
-      ! json[JSON_PUBLIC_KEY_NAME]?.nil?
+      !json[JSON_PUBLIC_KEY_NAME]?.nil?
     end
 
     def priv_key_not_found?
@@ -138,13 +136,13 @@ module EncJson
     end
 
     def escape_special_chars(value)
-      if value
-        value.gsub("$", "\\$").gsub("\"", "\\\"").gsub("`", "\\`")
-      else
-        value
-      end
+      return value unless value
+      # Pořadí je důležité - nejdřív backslashy!
+      value = value.gsub("\\", "\\\\\\") # \  -> \\
+      value = value.gsub("\"", "\\\"")   # "  -> \"
+      value = value.gsub("`", "\\`")     # `  -> \`
+      value = value.gsub("$", "\\$")     # $  -> \$
+      value
     end
-
   end
-
 end
