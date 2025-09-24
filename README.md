@@ -46,9 +46,9 @@ Writing shard.lock
 $ shards build --production --static
 $ strip bin/encjson
 $ strip bin/encjson-web
-$ mkdir -p /user/local/src/encjson/alpine-bin/
-$ cp bin/encjson /user/local/src/encjson/alpine-bin/encjson-static
-$ cp bin/encjson-web /user/local/src/encjson/alpine-bin/encjson-web-static
+$ mkdir -p /user/local/src/encjson/bin/alpine-bin/
+$ cp bin/encjson /user/local/src/encjson/bin/alpine-bin/encjson-static
+$ cp bin/encjson-web /user/local/src/encjson/bin/alpine-bin/encjson-web-static
 ```
 ## Development
 
