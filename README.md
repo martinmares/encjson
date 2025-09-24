@@ -16,6 +16,9 @@ TODO: Write usage instructions here
 
 ```bash
 $ docker run --rm -it --platform linux/amd64 --entrypoint /bin/bash -v $(pwd):/user/local/src/encjson 84codes/crystal:latest-ubuntu-22.04
+
+$ docker run --rm -it --platform linux/amd64 --entrypoint /bin/sh -v $(pwd):/user/local/src/encjson 84codes/crystal:master-alpine-latest
+
 ```
   * inside contaier run
 
@@ -39,12 +42,13 @@ Writing shard.lock
 
   * next steps
 
-```
+```bash
 $ shards build --production --static
 $ strip bin/encjson
 $ strip bin/encjson-web
-$ cp bin/encjson /user/local/src/encjson/bin/encjson-static
-$ cp bin/encjson-web /user/local/src/encjson/bin/encjson-web-static
+$ mkdir -p /user/local/src/encjson/alpine-bin/
+$ cp bin/encjson /user/local/src/encjson/alpine-bin/encjson-static
+$ cp bin/encjson-web /user/local/src/encjson/alpine-bin/encjson-web-static
 ```
 ## Development
 
